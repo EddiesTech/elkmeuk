@@ -1,5 +1,5 @@
 version: "1"
 rules:
   - base: master
-    upstream: EddiesTech:master
+    upstream: elk-zone:master
     mergeMethod: merge
