@@ -1,5 +1,5 @@
 version: "1"
 rules:
-  - base: master
-    upstream: elk-zone:master
+  - base: main
+    upstream: elk-zone:main
     mergeMethod: merge
