@@ -1,5 +1,5 @@
-import process from 'node:process'
-import type { Variant } from 'unocss'
+import { variantParentMatcher } from '@unocss/preset-mini/utils'
+
 import {
   defineConfig,
   presetAttributify,
@@ -10,8 +10,6 @@ import {
   transformerDirectives,
   transformerVariantGroup,
 } from 'unocss'
-
-import { variantParentMatcher } from '@unocss/preset-mini/utils'
 
 export default defineConfig({
   shortcuts: [
@@ -65,10 +63,8 @@ export default defineConfig({
       'flex-v-center': 'items-center',
       'flex-h-center': 'justify-center',
       'bg-hover-overflow': 'relative z-0 transition-colors duration-250 after-content-empty after:(absolute inset--4px bg-transparent rounded-full z--1 transition-colors duration-250) hover:after:(bg-active)',
-
-      'timeline-title-style': 'text-primary text-lg font-bold',
     },
-    [/^elk-group-hover[:-]([a-z0-9\/-]+)$/, ([,r]) => `media-mouse-group-hover-${r} group-active-${r}`],
+    [/^elk-group-hover[:-]([a-z0-9/-]+)$/, ([,r]) => `media-mouse-group-hover-${r} group-active-${r}`],
   ],
   presets: [
     presetUno({
@@ -108,29 +104,14 @@ export default defineConfig({
     },
   },
   variants: [
-    ...(process.env.TAURI_PLATFORM
-      ? <Variant<any>[]>[(matcher) => {
-        if (!matcher.startsWith('native:'))
-          return
-        return {
-          matcher: matcher.slice(7),
-          layer: 'native',
-        }
-      }]
-      : []),
-    ...(process.env.TAURI_PLATFORM !== 'macos'
-      ? <Variant<any>[]>[
-        (matcher) => {
-          if (!matcher.startsWith('native-mac:'))
-            return
-          return {
-            matcher: matcher.slice(11),
-            layer: 'native-mac',
-          }
-        },
-      ]
-      : []
-    ),
+    (matcher) => {
+      if (!matcher.startsWith('native-mac:'))
+        return
+      return {
+        matcher: matcher.slice(11),
+        layer: 'native-mac',
+      }
+    },
     variantParentMatcher('fullscreen', '@media (display-mode: fullscreen)'),
     variantParentMatcher('coarse-pointer', '@media (pointer: coarse)'),
   ],

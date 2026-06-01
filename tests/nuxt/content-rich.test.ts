@@ -1,10 +1,18 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { renderToString } from 'vue/server-renderer'
-import { format } from 'prettier'
+/* eslint perfectionist/sort-imports: "off" */
+// to prevent error when importing '@nuxt/test-utils/runtime' before 'vitest'
+// ref. #2984 chore(deps): update dependency @antfu/eslint-config to v3 by renovate[bot]
+// https://github.com/elk-zone/elk/pull/2984
+
 import type { mastodon } from 'masto'
+import { format } from 'prettier'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockComponent } from '@nuxt/test-utils/runtime'
-import { contentToVNode } from '~/composables/content-render'
+import { h } from 'vue'
+import { renderToString } from 'vue/server-renderer'
 import type { ContentParseOptions } from '~/composables/content-parse'
+import { contentToVNode } from '~/composables/content-render'
+
+const SPECIAL_COMMENT_ELEMENT_RE = /<!--[[\]]-->/g
 
 beforeEach(() => {
   publicServer.value = useRuntimeConfig().public.defaultServer
@@ -75,7 +83,7 @@ describe('content-rich', () => {
   })
 
   it('code frame 2', async () => {
-    const { formatted } = await render('<p><span class=\"h-card\"><a href=\"https://webtoo.ls/@antfu\" class=\"u-url mention\">@<span>antfu</span></a></span> Testing<br />```ts<br />const a = hello<br />```</p>')
+    const { formatted } = await render('<p><span class="h-card"><a href="https://webtoo.ls/@antfu" class="u-url mention">@<span>antfu</span></a></span> Testing<br />```ts<br />const a = hello<br />```</p>')
     expect(formatted).toMatchSnapshot()
   })
 
@@ -181,6 +189,16 @@ describe('content-rich', () => {
     `)
     expect(formatted).toMatchSnapshot()
   })
+
+  it ('asterisk paris in inline code', async () => {
+    const { formatted } = await render('<p>`1 * 2 * 3`</p>')
+    expect(formatted).toMatchSnapshot()
+  })
+
+  it ('asterisk paris in code block', async () => {
+    const { formatted } = await render('<p>```<br />1 * 2 * 3<br />```</p>')
+    expect(formatted).toMatchSnapshot()
+  })
 })
 
 describe('editor', () => {
@@ -194,7 +212,7 @@ describe('editor', () => {
 async function render(content: string, options?: ContentParseOptions) {
   const vnode = contentToVNode(content, options)
   const html = (await renderToString(vnode))
-    .replace(/<!--[\[\]]-->/g, '')
+    .replace(SPECIAL_COMMENT_ELEMENT_RE, '')
   let formatted = ''
 
   try {
@@ -202,7 +220,7 @@ async function render(content: string, options?: ContentParseOptions) {
       parser: 'html',
     })
   }
-  catch (e) {
+  catch {
     formatted = html
   }
 
@@ -225,8 +243,9 @@ vi.mock('vue-router', async () => {
   }
 })
 
-vi.mock('@vueuse/shared', async () => {
-  const vueuseShared = await import('@vueuse/shared')
+vi.mock('@vueuse/shared', async (importOriginal) => {
+  const vueuseShared = await importOriginal<typeof import('@vueuse/shared')>()
+  const { readonly, ref } = await import('vue')
   // mock pausableWatch and watchPausable: vitest process hangs from time to time
   return {
     ...vueuseShared,
@@ -257,6 +276,13 @@ mockComponent('ContentMentionGroup', {
 
 mockComponent('AccountHoverWrapper', {
   props: ['handle', 'class'],
+  setup(_, { slots }) {
+    return () => slots?.default?.()
+  },
+})
+
+mockComponent('AccountTagHoverWrapper', {
+  props: ['tagName', 'class'],
   setup(_, { slots }) {
     return () => slots?.default?.()
   },

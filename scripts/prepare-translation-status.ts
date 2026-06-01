@@ -1,13 +1,13 @@
-import { Buffer } from 'node:buffer'
-import { flatten } from 'flat'
-import { createResolver } from '@nuxt/kit'
-import fs from 'fs-extra'
-import { countryLocaleVariants, currentLocales } from '../config/i18n'
 import type { LocaleEntry } from '../docs/types'
-import type { ElkTranslationStatus } from '~/types/translation-status'
+import type { ElkTranslationStatus } from '../shared/types/translation-status'
+import { Buffer } from 'node:buffer'
+import { readFile, writeFile } from 'node:fs/promises'
+import { flatten } from 'flat'
+import { createResolver } from 'nuxt/kit'
+import { countryLocaleVariants, currentLocales } from '../config/i18n.ts'
 
 export const localeData: [code: string, file: string[], title: string][]
-    = currentLocales.map((l: any) => [l.code, l.files ? l.files : [l.file!], l.name ?? l.code])
+  = currentLocales.map((l: any) => [l.code, l.files ? l.files : [l.file!], l.name ?? l.code])
 
 function merge(src: Record<string, any>, dst: Record<string, any>) {
   for (const key in src) {
@@ -28,7 +28,7 @@ async function readI18nFile(file: string | string[]) {
   if (Array.isArray(file)) {
     const files = await Promise.all(file.map(f => async () => {
       return JSON.parse(Buffer.from(
-        await fs.readFile(resolver.resolve(`../locales/${f}`), 'utf-8'),
+        await readFile(resolver.resolve(`../locales/${f}`), 'utf-8'),
       ).toString())
     })).then(f => f.map(f => f()))
     const data: Record<string, any> = files[0]
@@ -38,7 +38,7 @@ async function readI18nFile(file: string | string[]) {
   }
   else {
     return JSON.parse(Buffer.from(
-      await fs.readFile(resolver.resolve(`../locales/${file}`), 'utf-8'),
+      await readFile(resolver.resolve(`../locales/${file}`), 'utf-8'),
     ).toString())
   }
 }
@@ -78,7 +78,7 @@ async function prepareTranslationStatus() {
 
   await Promise.all(localeData.filter(l => l[0] !== 'en-US').map(async ([code, file, title]) => {
     console.info(`Comparing ${code}...`, title)
-    let useFile = file[file.length - 1]
+    let useFile = file.at(-1)
     const entry = countryLocaleVariants[file[0].slice(0, file[0].indexOf('.'))]
     if (entry) {
       const countryFile = entry.find(e => e.code === code && e.country === true)
@@ -88,7 +88,7 @@ async function prepareTranslationStatus() {
     data[code] = {
       title,
       useFile,
-      file: Array.isArray(file) ? file[file.length - 1] : file,
+      file: Array.isArray(file) ? file.at(-1) : file,
       translated: [],
       missing: [],
       outdated: [],
@@ -107,7 +107,7 @@ async function prepareTranslationStatus() {
 
   const resolver = createResolver(import.meta.url)
 
-  await fs.writeFile(
+  await writeFile(
     resolver.resolve('../docs/translation-status.json'),
     JSON.stringify(sorted, null, 2),
     { encoding: 'utf-8' },
@@ -136,7 +136,7 @@ async function prepareTranslationStatus() {
     }
   })
 
-  await fs.writeFile(
+  await writeFile(
     resolver.resolve('../elk-translation-status.json'),
     JSON.stringify(translationStatus, null, 2),
     { encoding: 'utf-8' },

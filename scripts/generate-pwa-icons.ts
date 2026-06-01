@@ -1,9 +1,11 @@
+import type { PngOptions, ResizeOptions } from 'sharp'
 import { rm, writeFile } from 'node:fs/promises'
 import process from 'node:process'
 import { resolve } from 'pathe'
-import type { PngOptions, ResizeOptions } from 'sharp'
 import sharp from 'sharp'
 import ico from 'sharp-ico'
+
+const TEMP_PNG_POSTFIX_RE = /-temp\.png$/
 
 interface Icon {
   sizes: number[]
@@ -82,7 +84,7 @@ const root = process.cwd()
 const publicFolders = ['public', 'public-dev', 'public-staging'].map(folder => resolve(root, folder))
 
 async function optimizePng(filePath: string, png: PngOptions) {
-  await sharp(filePath).png(png).toFile(`${filePath.replace(/-temp\.png$/, '.png')}`)
+  await sharp(filePath).png(png).toFile(`${filePath.replace(TEMP_PNG_POSTFIX_RE, '.png')}`)
   await rm(filePath)
 }
 
@@ -103,7 +105,8 @@ async function generateTransparentIcons(icons: ResolvedIcons, svgLogo: string, f
           Math.round(size * (1 - padding)),
           Math.round(size * (1 - padding)),
           resizeOptions,
-        ).toBuffer(),
+        )
+        .toBuffer(),
     }]).toFile(filePath)
     await optimizePng(filePath, icons.png)
   }))
@@ -126,7 +129,8 @@ async function generateMaskableIcons(type: IconType, icons: ResolvedIcons, svgLo
           Math.round(size * (1 - padding)),
           Math.round(size * (1 - padding)),
           resizeOptions,
-        ).toBuffer(),
+        )
+        .toBuffer(),
     }]).toFile(filePath)
     await optimizePng(filePath, icons.png)
   }))
@@ -146,9 +150,9 @@ async function generatePWAIconForEnv(folder: string, icons: ResolvedIcons) {
     } = icons.ico
     await Promise.all(icons.ico.sizes.map(async (size) => {
       const png = await sharp(
-        resolve(folder, icons.iconName('transparent', size).replace(/-temp\.png$/, '.png')),
+        resolve(folder, icons.iconName('transparent', size).replace(TEMP_PNG_POSTFIX_RE, '.png')),
       ).toFormat('png').toBuffer()
-      await writeFile(resolve(folder, icoName(size)), ico.encode([png]))
+      await writeFile(resolve(folder, icoName(size)), new Uint8Array(ico.encode([png])))
     }))
   }
 }

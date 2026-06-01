@@ -37,8 +37,8 @@ export const countryLocaleVariants: Record<string, (LocaleObjectData & { country
   ca: [
     // ca.json contains ca-ES translations
     // { code: 'ca-AD', name: 'Català (Andorra)' },
-    { country: true, code: 'ca-ES', name: 'Català (Espanya)' },
-    { code: 'ca-valencia', name: 'Català (valencià)' },
+    { country: true, code: 'ca-ES', name: 'Català' },
+    { code: 'ca-valencia', name: 'Valencià' },
     // { code: 'ca-FR', name: 'Català (França)' },
     // { code: 'ca-IT', name: 'Català (Itàlia)' },
   ],
@@ -79,7 +79,7 @@ const locales: LocaleObjectData[] = [
     file: 'en.json',
     name: 'English',
   },
-  ({
+  {
     code: 'ar',
     file: 'ar.json',
     name: 'العربية',
@@ -88,8 +88,8 @@ const locales: LocaleObjectData[] = [
       const name = new Intl.PluralRules('ar-EG').select(choice)
       return { zero: 0, one: 1, two: 2, few: 3, many: 4, other: 5 }[name]
     },
-  } satisfies LocaleObjectData),
-  ({
+  } satisfies LocaleObjectData,
+  {
     code: 'ckb',
     file: 'ckb.json',
     name: 'کوردیی ناوەندی',
@@ -98,8 +98,8 @@ const locales: LocaleObjectData[] = [
       const name = new Intl.PluralRules('ckb').select(choice)
       return { zero: 0, one: 1, two: 2, few: 3, many: 4, other: 5 }[name]
     },
-  } satisfies LocaleObjectData),
-  ({
+  } satisfies LocaleObjectData,
+  {
     code: 'fa-IR',
     file: 'fa-IR.json',
     name: 'فارسی',
@@ -108,11 +108,16 @@ const locales: LocaleObjectData[] = [
       const name = new Intl.PluralRules('fa-IR').select(choice)
       return { zero: 0, one: 1, two: 2, few: 3, many: 4, other: 5 }[name]
     },
-  } satisfies LocaleObjectData),
+  } satisfies LocaleObjectData,
   {
     code: 'ca',
     file: 'ca.json',
     name: 'Català',
+  },
+  {
+    code: 'el-GR',
+    file: 'el-GR.json',
+    name: 'Ελληνικά',
   },
   {
     code: 'de-DE',
@@ -213,8 +218,8 @@ const locales: LocaleObjectData[] = [
     name: 'Indonesia',
   },
   {
-    code: 'fi-FI',
-    file: 'fi-FI.json',
+    code: 'fi',
+    file: 'fi.json',
     name: 'Suomi',
   },
   {
@@ -233,6 +238,11 @@ const locales: LocaleObjectData[] = [
     name: 'Italiano',
   },
   {
+    code: 'sv',
+    file: 'sv.json',
+    name: 'Svenska',
+  },
+  {
     code: 'th-TH',
     file: 'th-TH.json',
     name: 'ไทย',
@@ -246,6 +256,11 @@ const locales: LocaleObjectData[] = [
     code: 'vi-VN',
     file: 'vi-VN.json',
     name: 'Tiếng Việt',
+  },
+  {
+    code: 'cy',
+    file: 'cy.json',
+    name: 'Cymraeg',
   },
 ]
 
@@ -268,7 +283,7 @@ function buildLocales() {
       acc.push(data)
     }
     return acc
-  }, <LocaleObjectData[]>[])
+  }, [] as LocaleObjectData[])
 
   return useLocales.sort((a, b) => a.code.localeCompare(b.code))
 }
@@ -298,7 +313,7 @@ export const datetimeFormats = Object.values(currentLocales).reduce((acc, data) 
   }
 
   return acc
-}, <DateTimeFormats>{})
+}, {} as DateTimeFormats)
 
 export const numberFormats = Object.values(currentLocales).reduce((acc, data) => {
   const numberFormats = data.numberFormats
@@ -330,7 +345,7 @@ export const numberFormats = Object.values(currentLocales).reduce((acc, data) =>
   }
 
   return acc
-}, <NumberFormats>{})
+}, {} as NumberFormats)
 
 export const pluralRules = Object.values(currentLocales).reduce((acc, data) => {
   const pluralRule = data.pluralRule
@@ -340,4 +355,4 @@ export const pluralRules = Object.values(currentLocales).reduce((acc, data) => {
   }
 
   return acc
-}, <PluralizationRules>{})
+}, {} as PluralizationRules)

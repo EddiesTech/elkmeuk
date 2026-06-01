@@ -1,5 +1,4 @@
-import type { Ref } from 'vue'
-import type { UnwrapNestedRefs } from 'vue'
+import type { Ref, UnwrapNestedRefs } from 'vue'
 
 export interface PwaInjection {
   isInstalled: boolean
@@ -19,7 +18,7 @@ declare module '#app' {
   }
 }
 
-declare module '@vue/runtime-core' {
+declare module 'vue' {
   interface ComponentCustomProperties {
     $pwa?: UnwrapNestedRefs<PwaInjection>
   }
