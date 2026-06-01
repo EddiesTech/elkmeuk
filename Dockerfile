@@ -32,6 +32,8 @@ RUN pnpm nuxt prepare
 # Run full install with every postinstall script ( This needs project file )
 RUN pnpm i --frozen-lockfile
 
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 # Build
 RUN pnpm build
 
